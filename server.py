@@ -2,8 +2,8 @@ import socket
 import select
 import sys
 
-HOST = "127.0.0.1"
-PORT = 80
+HOST = "51.77.151.88"
+PORT = 8080
 
 mySocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -26,13 +26,31 @@ while is_server_on:
 		connection_with_client, connection_infos = connection.accept()
 		connected_clients.append(connection_with_client)
 		print("Client connecté ! Adresse IP : {} - Port : {}".format(connection_infos[0], connection_infos[1]))
-	nb_clients = len(connected_clients)
 
-	for client in connected_clients:
+	nb_clients = len(connected_clients)
+	print("Nb clients : {}".format(nb_clients))
+
+	if nb_clients == 1:
+		nb_clients = len(connected_clients)
+		print("En attente de connexion des 2 clients")
+		print("Nb clients : {}".format(nb_clients))
 		msg_to_send = "{}".format(nb_clients)
 		msg_to_send = msg_to_send.encode("UTF-8")
 		try:
-			client.sendall(msg_to_send)
+			for i in range(len(connected_clients)):
+				connected_clients[i].send(msg_to_send)
+			print("Message envoyé")
+		except ConnectionResetError:
+			print("Le client a été déconnecté")
+			is_server_on = False
+
+	else:
+		msg_to_send = "{}".format(nb_clients)
+		msg_to_send = msg_to_send.encode("UTF-8")
+		try:
+			for i in range(len(connected_clients)):
+				connected_clients[i].send(msg_to_send)
+			print("Message envoyé")
 		except ConnectionResetError:
 			print("Le client a été déconnecté")
 			is_server_on = False

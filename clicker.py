@@ -2,10 +2,17 @@ from functions import *
 
 pygame.init()
 continuer = True
+nb_joueurs = "0"
+
+screen = pygame.display.set_mode((800, 600), RESIZABLE)
+pygame.display.set_caption("Rapide comme l'alcool ?")
+background = (255, 255, 255)
+set_background(screen, background)
+font = pygame.font.Font(None, 50)
 
 # Network
 HOST = "51.77.151.88"
-PORT = 80
+PORT = 8080
 mySocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
 	mySocket.connect((HOST, PORT))
@@ -17,36 +24,52 @@ print("Connexion établie avec le serveur sur le port {}".format(PORT))
 
 data = []
 
-received_msg = mySocket.recv(1024)
-received_msg = received_msg.decode("Utf8")
-data.append(received_msg)
-nb_joueurs = data[0]
-print("Nb joueurs : {}".format(nb_joueurs))
-
-while continuer is True:
-	screen = pygame.display.set_mode((800, 600))
-	pygame.display.set_caption("Rapide comme l'alcool ?")
-	background = (255, 255, 255)
-	set_background(screen, background)
-	font = pygame.font.Font(None, 50)
-
-	result = 0
-
-	text = font.render("En attente d'un joueur...", True, (0, 0, 0), (255, 255, 255))
+while "2" not in nb_joueurs:
+	pygame.time.Clock().tick(30)
+	received_msg = mySocket.recv(1024)
+	received_msg = received_msg.decode("Utf8")
+	data.append(received_msg)
+	nb_joueurs = data[-1]
+	print("Nb joueurs : {}".format(nb_joueurs))
+	text = font.render("En attente de joueurs...", True, (0, 0, 0), (255, 255, 255))
 	textRect = text.get_rect()
 	textRect.centerx = screen.get_rect().centerx
 	textRect.centery = screen.get_rect().centery
 	screen.blit(text, textRect)
 	pygame.display.update()
+	event = pygame.event.poll()
+	if event.type == pygame.QUIT:
+		continuer = False
+		continuer_jeu = False
+		rejouer = False
+	else:
+		pass
 
-	timeleft = 5
-	# show_time(screen, timeleft)
+
+timeleft = 3
+timestart_beforegame = int(time.time())
+while timeleft >= 0:
+	timeleft = 3-(int(time.time())-timestart_beforegame)
+	show_result(screen, timeleft)
+
+while continuer is True:
+	result = 0
+	received_msg = mySocket.recv(1024)
+	received_msg = received_msg.decode("Utf8")
+	data.append(received_msg)
+	nb_joueurs = data[0]
 
 	continuer_jeu = True
 	rejouer = True
 
+	timeleft = 5
+
 	while continuer_jeu is True:
-		if result > 0 and timeleft > 0:
+		if result == 0:
+			timestart = int(time.time())
+			result += 1
+			show_result(screen, result)
+		elif result > 0 and timeleft > 0:
 			timeleft = 5-(int(time.time())-timestart)
 			show_time(screen, timeleft)
 		elif result > 0 >= timeleft:
@@ -58,8 +81,6 @@ while continuer is True:
 			continuer_jeu = False
 			rejouer = False
 		elif pygame.mouse.get_pressed()[0] and event.type == pygame.MOUSEBUTTONDOWN:
-			if result == 0:
-				timestart = int(time.time())
 			result += 1
 			show_result(screen, result)
 
@@ -70,7 +91,3 @@ while continuer is True:
 			continuer = False
 			continuer_jeu = False
 			rejouer = False
-		if event.type == KEYDOWN:
-			if event.key == K_RETURN:
-				rejouer = False
-				continuer_jeu = True
