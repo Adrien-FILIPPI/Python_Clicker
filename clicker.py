@@ -22,14 +22,14 @@ except socket.error:
 
 print("Connexion établie avec le serveur sur le port {}".format(PORT))
 
-data = []
+data = [""]
 
 while "2" not in nb_joueurs:
 	pygame.time.Clock().tick(30)
 	received_msg = mySocket.recv(1024)
 	received_msg = received_msg.decode("Utf8")
-	data.append(received_msg)
-	nb_joueurs = data[-1]
+	data[0] = received_msg
+	nb_joueurs = data[0]
 	print("Nb joueurs : {}".format(nb_joueurs))
 	text = font.render("En attente de joueurs...", True, (0, 0, 0), (255, 255, 255))
 	textRect = text.get_rect()
@@ -39,25 +39,19 @@ while "2" not in nb_joueurs:
 	pygame.display.update()
 	event = pygame.event.poll()
 	if event.type == pygame.QUIT:
-		continuer = False
-		continuer_jeu = False
-		rejouer = False
+		sys.exit()
 	else:
 		pass
 
-
 timeleft = 3
 timestart_beforegame = int(time.time())
-while timeleft >= 0:
+while timeleft > 0:
 	timeleft = 3-(int(time.time())-timestart_beforegame)
-	show_result(screen, timeleft)
+	show_result(screen, "La partie commence dans {}".format(timeleft))
+	time.sleep(0.1)
 
 while continuer is True:
 	result = 0
-	received_msg = mySocket.recv(1024)
-	received_msg = received_msg.decode("Utf8")
-	data.append(received_msg)
-	nb_joueurs = data[0]
 
 	continuer_jeu = True
 	rejouer = True

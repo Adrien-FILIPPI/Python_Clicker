@@ -16,12 +16,12 @@ except socket.error:
 
 print("Connexion établie avec le serveur sur le port {}".format(PORT))
 
-data = []
+data = [""]
 
 while nb_joueurs != "2":
 	received_msg = mySocket.recv(1024)
 	received_msg = received_msg.decode("Utf8")
-	data.append(received_msg)
+	data[0] = received_msg
 	nb_joueurs = data[0]
 	print("Nb joueurs : {}".format(nb_joueurs))
 
